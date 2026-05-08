@@ -1,0 +1,12 @@
+node_modules
+.nuxt
+.output
+dist
+.env
+.env.*
+*.log
+nuxt-dev.log
+nuxt-dev.err.log
+.DS_Store
+Thumbs.db
+.ssh-codex
