@@ -1,7 +1,7 @@
 export default defineNuxtConfig({
   compatibilityDate: '2026-05-08',
   devtools: { enabled: true },
-  modules: ['@nuxt/icon'],
+  modules: ['@nuxt/icon', '@vercel/analytics/nuxt'],
   css: ['~/assets/css/main.css'],
   postcss: {
     plugins: {
@@ -16,6 +16,13 @@ export default defineNuxtConfig({
         {
           name: 'description',
           content: '社團法人臺北市三創協會快速原型網站'
+        }
+      ],
+      link: [
+        {
+          rel: 'icon',
+          type: 'image/x-icon',
+          href: '/favicon.ico'
         }
       ]
     }
