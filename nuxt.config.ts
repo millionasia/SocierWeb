@@ -1,7 +1,7 @@
 export default defineNuxtConfig({
   compatibilityDate: '2026-05-08',
   devtools: { enabled: true },
-  modules: ['@nuxt/icon', '@vercel/analytics/nuxt'],
+  modules: ['@nuxt/icon'],
   css: ['~/assets/css/main.css'],
   postcss: {
     plugins: {
