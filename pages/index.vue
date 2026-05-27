@@ -5,6 +5,13 @@ const spotlightPhotos = computed(() => highlights.value.slice(0, 4))
 const homeNews = computed(() => $millionasia.news.slice(0, 10))
 const homeEvents = computed(() => $millionasia.events.slice(0, 10))
 const eventRegistrationStatus = (event) => $millionasia.getEventRegistrationStatus(event)
+const statusBadgeClass = (event) => {
+  const status = eventRegistrationStatus(event)
+  if (status.isOpen) return 'bg-teal text-white'
+  if (status.isFull) return 'bg-rosewood text-white'
+  if (status.isClosed) return 'bg-ink text-white'
+  return 'bg-white text-ink ring-1 ring-rosewood/15'
+}
 </script>
 
 <template>
@@ -133,7 +140,19 @@ const eventRegistrationStatus = (event) => $millionasia.getEventRegistrationStat
               >
                 <img :src="item.image" :alt="item.title" class="h-20 w-full rounded object-cover ring-1 ring-rosewood/10">
                 <span>
-                  <time class="text-sm font-bold text-brass">{{ item.date }}</time>
+                  <span class="flex flex-wrap items-center gap-2">
+                    <time class="text-sm font-bold text-brass">{{ item.date }}</time>
+                    <span
+                      class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-black leading-none"
+                      :class="statusBadgeClass(item)"
+                    >
+                      <Icon
+                        :name="eventRegistrationStatus(item).acceptsRegistration ? 'lucide:mouse-pointer-click' : 'lucide:info'"
+                        class="h-3 w-3"
+                      />
+                      {{ eventRegistrationStatus(item).label }}
+                    </span>
+                  </span>
                   <span class="mt-1 block font-bold leading-relaxed text-ink group-hover:text-teal">{{ item.title }}</span>
                   <span class="mt-1 line-clamp-1 block text-xs text-ink/58">{{ item.summary }}</span>
                 </span>
