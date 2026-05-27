@@ -5,7 +5,15 @@ const { $millionasia } = useNuxtApp()
 const item = computed(() => $millionasia.findEvent(route.params.id))
 const adjacent = computed(() => $millionasia.getAdjacent($millionasia.events, route.params.id))
 const registrationStatus = computed(() => (item.value ? $millionasia.getEventRegistrationStatus(item.value) : null))
-const isFull = computed(() => registrationStatus.value?.isFull ?? false)
+const canRegisterOnline = computed(() => registrationStatus.value?.acceptsRegistration ?? false)
+const statusBadgeClass = computed(() => {
+  const status = registrationStatus.value
+  if (!status) return 'bg-ink text-white'
+  if (status.isOpen) return 'bg-teal text-white'
+  if (status.isFull) return 'bg-rosewood text-white'
+  if (status.isClosed) return 'bg-ink text-white'
+  return 'bg-ivory text-ink ring-1 ring-rosewood/15'
+})
 const seatOptions = computed(() => {
   const maxSeats = Math.min(registrationStatus.value?.remaining ?? 0, 4)
   return Array.from({ length: maxSeats }, (_, index) => index + 1)
@@ -47,7 +55,7 @@ const saveMockRegistration = (payload) => {
 }
 
 const submitRegistration = () => {
-  if (!item.value || isFull.value) return
+  if (!item.value || !canRegisterOnline.value) return
 
   confirmationCode.value = `TSA-${item.value.id}-${Date.now().toString().slice(-5)}`
   registrationSubmitted.value = true
@@ -89,7 +97,7 @@ useHead(() => ({
             </time>
             <span
               class="absolute bottom-5 right-5 rounded px-4 py-2 text-sm font-black shadow"
-              :class="isFull ? 'bg-ink text-white' : 'bg-brass text-white'"
+              :class="statusBadgeClass"
             >
               {{ registrationStatus.label }}
             </span>
@@ -101,7 +109,7 @@ useHead(() => ({
               <h1 class="mt-3 flex flex-wrap items-center gap-3 text-3xl font-black leading-tight sm:text-4xl">
                 <span>{{ item.title }}</span>
                 <span
-                  v-if="!isFull"
+                  v-if="registrationStatus.isOnline"
                   class="inline-flex items-center gap-1.5 rounded bg-teal/10 px-3 py-1.5 text-sm font-black leading-none text-teal ring-1 ring-teal/20"
                 >
                   <Icon name="lucide:mouse-pointer-click" class="h-4 w-4" />
@@ -120,8 +128,17 @@ useHead(() => ({
                   <p class="mt-2 font-black text-rosewood">{{ item.time }}</p>
                 </div>
                 <div class="rounded bg-mist p-4 ring-1 ring-rosewood/10">
-                  <p class="text-xs font-bold text-ink/52">剩餘名額</p>
-                  <p class="mt-2 font-black text-rosewood">{{ registrationStatus.remaining }} / {{ item.capacity }}</p>
+                  <p class="text-xs font-bold text-ink/52">
+                    {{ registrationStatus.isOnline && !registrationStatus.isClosed ? '剩餘名額' : '報名狀態' }}
+                  </p>
+                  <p class="mt-2 font-black text-rosewood">
+                    <template v-if="registrationStatus.isOnline && !registrationStatus.isClosed">
+                      {{ registrationStatus.remaining }} / {{ item.capacity }}
+                    </template>
+                    <template v-else>
+                      {{ registrationStatus.label }}
+                    </template>
+                  </p>
                 </div>
               </div>
 
@@ -152,7 +169,7 @@ useHead(() => ({
                     <dt class="font-bold text-white/58">活動地點</dt>
                     <dd class="mt-1 font-bold">{{ item.location }}</dd>
                   </div>
-                  <div>
+                  <div v-if="registrationStatus.isOnline">
                     <dt class="font-bold text-white/58">報名截止</dt>
                     <dd class="mt-1 font-bold">{{ item.registrationDeadline }}</dd>
                   </div>
@@ -167,7 +184,7 @@ useHead(() => ({
                 </dl>
               </aside>
 
-              <section class="rounded bg-white p-5 shadow-soft ring-1 ring-rosewood/10">
+              <section v-if="canRegisterOnline" class="rounded bg-white p-5 shadow-soft ring-1 ring-rosewood/10">
                 <div class="flex items-center justify-between gap-4">
                   <div>
                     <p class="text-xs font-bold uppercase tracking-[0.16em] text-brass">Registration</p>
@@ -260,7 +277,6 @@ useHead(() => ({
                       v-model.number="registration.seats"
                       required
                       class="mt-2 w-full rounded border border-rosewood/15 bg-mist px-4 py-3 text-sm font-bold outline-none transition focus:border-teal focus:bg-white"
-                      :disabled="isFull"
                     >
                       <option v-for="seat in seatOptions" :key="seat" :value="seat">{{ seat }} 位</option>
                     </select>
@@ -283,11 +299,10 @@ useHead(() => ({
 
                   <button
                     type="submit"
-                    class="inline-flex w-full items-center justify-center gap-2 rounded bg-teal px-5 py-3 text-sm font-black text-white transition hover:bg-rosewood disabled:cursor-not-allowed disabled:bg-ink/30"
-                    :disabled="isFull"
+                    class="inline-flex w-full items-center justify-center gap-2 rounded bg-teal px-5 py-3 text-sm font-black text-white transition hover:bg-rosewood"
                   >
-                    <Icon :name="isFull ? 'lucide:ban' : 'lucide:send'" class="h-4 w-4" />
-                    {{ isFull ? '名額已滿' : '送出報名' }}
+                    <Icon name="lucide:send" class="h-4 w-4" />
+                    送出報名
                   </button>
                 </form>
               </section>

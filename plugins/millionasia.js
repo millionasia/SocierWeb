@@ -51,6 +51,25 @@ const eventSeeds = [
 ]
 
 const eventCapacities = [80, 120, 48, 60, 36, 40, 72, 54, 160, 130, 42, 32, 70, 140, 24, 38, 180]
+const eventRegistrationModes = [
+  'online-open',
+  'offline',
+  'online-full',
+  'online-closed',
+  'online-full',
+  'online-closed',
+  'offline',
+  'online-full',
+  'online-closed',
+  'offline',
+  'online-full',
+  'online-closed',
+  'offline',
+  'online-full',
+  'online-closed',
+  'offline',
+  'online-full'
+]
 
 const directorAvatars = [
   'https://randomuser.me/api/portraits/men/32.jpg',
@@ -137,7 +156,10 @@ class MillionasiaCore {
 
     this.events = eventSeeds.map(([date, title, summary], index) => {
       const capacity = eventCapacities[index % eventCapacities.length]
-      const registered = Math.min(capacity - 2, 18 + ((index * 9) % Math.max(capacity - 18, 1)))
+      const registrationMode = eventRegistrationModes[index % eventRegistrationModes.length]
+      const registered = registrationMode === 'online-full'
+        ? capacity
+        : Math.min(capacity - 2, 18 + ((index * 9) % Math.max(capacity - 18, 1)))
       const deadline = this.getRegistrationDeadline(date)
 
       return {
@@ -151,8 +173,11 @@ class MillionasiaCore {
         audience: ['協會會員', '產業夥伴', '對主題有興趣之來賓'],
         capacity,
         registered,
+        registrationMode,
         registrationDeadline: deadline,
-        registrationNote: '完成線上報名後，協會將於活動前寄送提醒通知與報到資訊。',
+        registrationNote: registrationMode === 'offline'
+          ? '本活動未開放線上報名，請依協會公告方式或洽秘書處了解參與方式。'
+          : '完成線上報名後，協會將於活動前寄送提醒通知與報到資訊。',
         agenda: [
           '來賓報到與交流',
           '主題分享與案例說明',
@@ -205,11 +230,46 @@ class MillionasiaCore {
 
   getEventRegistrationStatus(event) {
     const remaining = Math.max(event.capacity - event.registered, 0)
+    const mode = event.registrationMode || (remaining > 0 ? 'online-open' : 'online-full')
+    const statusMap = {
+      'online-open': {
+        label: '開放報名中',
+        isOnline: true,
+        isOpen: true,
+        isFull: false,
+        isClosed: false,
+        acceptsRegistration: true
+      },
+      'online-full': {
+        label: '報名已額滿',
+        isOnline: true,
+        isOpen: false,
+        isFull: true,
+        isClosed: false,
+        acceptsRegistration: false
+      },
+      'online-closed': {
+        label: '報名已截止',
+        isOnline: true,
+        isOpen: false,
+        isFull: false,
+        isClosed: true,
+        acceptsRegistration: false
+      },
+      offline: {
+        label: '不可線上報名',
+        isOnline: false,
+        isOpen: false,
+        isFull: false,
+        isClosed: false,
+        acceptsRegistration: false
+      }
+    }
 
     return {
+      mode,
       remaining,
-      label: remaining > 0 ? '開放報名' : '名額已滿',
-      isFull: remaining === 0
+      ...(statusMap[mode] || statusMap['online-open'])
     }
   }
 

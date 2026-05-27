@@ -14,6 +14,13 @@ const pagedEvents = computed(() => {
 })
 
 const registrationStatus = (event) => $millionasia.getEventRegistrationStatus(event)
+const statusBadgeClass = (event) => {
+  const status = registrationStatus(event)
+  if (status.isOpen) return 'bg-teal text-white'
+  if (status.isFull) return 'bg-rosewood text-white'
+  if (status.isClosed) return 'bg-ink text-white'
+  return 'bg-ivory text-ink ring-1 ring-rosewood/15'
+}
 </script>
 
 <template>
@@ -46,7 +53,7 @@ const registrationStatus = (event) => $millionasia.getEventRegistrationStatus(ev
             </time>
             <span
               class="absolute bottom-4 right-4 rounded px-3 py-2 text-xs font-black shadow"
-              :class="registrationStatus(item).isFull ? 'bg-ink text-white' : 'bg-brass text-white'"
+              :class="statusBadgeClass(item)"
             >
               {{ registrationStatus(item).label }}
             </span>
@@ -59,7 +66,7 @@ const registrationStatus = (event) => $millionasia.getEventRegistrationStatus(ev
             <h2 class="flex flex-wrap items-center gap-2 text-xl font-bold leading-relaxed group-hover:text-teal">
               <span>{{ item.title }}</span>
               <span
-                v-if="!registrationStatus(item).isFull"
+                v-if="registrationStatus(item).isOnline"
                 class="inline-flex items-center gap-1 rounded bg-teal/10 px-2.5 py-1 text-xs font-black leading-none text-teal ring-1 ring-teal/20"
               >
                 <Icon name="lucide:mouse-pointer-click" class="h-3.5 w-3.5" />
@@ -69,11 +76,19 @@ const registrationStatus = (event) => $millionasia.getEventRegistrationStatus(ev
             <p class="mt-3 text-sm leading-7 text-ink/68">{{ item.summary }}</p>
             <div class="mt-5 flex items-center justify-between gap-3 border-t border-rosewood/10 pt-4">
               <span class="inline-flex items-center gap-2 text-sm font-bold text-ink/62">
-                <Icon name="lucide:users" class="h-4 w-4 text-teal" />
-                剩餘 {{ registrationStatus(item).remaining }} / {{ item.capacity }} 名
+                <Icon
+                  :name="registrationStatus(item).isOnline && !registrationStatus(item).isClosed ? 'lucide:users' : 'lucide:info'"
+                  class="h-4 w-4 text-teal"
+                />
+                <template v-if="registrationStatus(item).isOnline && !registrationStatus(item).isClosed">
+                  剩餘 {{ registrationStatus(item).remaining }} / {{ item.capacity }} 名
+                </template>
+                <template v-else>
+                  {{ registrationStatus(item).label }}
+                </template>
               </span>
               <span class="inline-flex items-center gap-1 text-sm font-black text-rosewood">
-                查看報名
+                {{ registrationStatus(item).acceptsRegistration ? '查看報名' : '查看活動' }}
                 <Icon name="lucide:chevron-right" class="h-4 w-4" />
               </span>
             </div>
