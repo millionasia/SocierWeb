@@ -98,7 +98,16 @@ useHead(() => ({
           <div class="grid gap-8 p-5 sm:p-8 lg:grid-cols-[1fr_22rem]">
             <div>
               <p class="eyebrow">Event Detail</p>
-              <h1 class="mt-3 text-3xl font-black leading-tight sm:text-4xl">{{ item.title }}</h1>
+              <h1 class="mt-3 flex flex-wrap items-center gap-3 text-3xl font-black leading-tight sm:text-4xl">
+                <span>{{ item.title }}</span>
+                <span
+                  v-if="!isFull"
+                  class="inline-flex items-center gap-1.5 rounded bg-teal/10 px-3 py-1.5 text-sm font-black leading-none text-teal ring-1 ring-teal/20"
+                >
+                  <Icon name="lucide:mouse-pointer-click" class="h-4 w-4" />
+                  線上報名
+                </span>
+              </h1>
               <p class="mt-5 text-lg leading-9 text-ink/72">{{ item.summary }}</p>
 
               <div class="mt-7 grid gap-3 sm:grid-cols-3">

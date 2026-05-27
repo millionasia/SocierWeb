@@ -56,7 +56,16 @@ const registrationStatus = (event) => $millionasia.getEventRegistrationStatus(ev
               <span class="text-sm font-bold text-brass">活動公告</span>
               <Icon name="lucide:arrow-up-right" class="h-5 w-5 text-rosewood transition group-hover:translate-x-1 group-hover:-translate-y-1" />
             </div>
-            <h2 class="text-xl font-bold leading-relaxed group-hover:text-teal">{{ item.title }}</h2>
+            <h2 class="flex flex-wrap items-center gap-2 text-xl font-bold leading-relaxed group-hover:text-teal">
+              <span>{{ item.title }}</span>
+              <span
+                v-if="!registrationStatus(item).isFull"
+                class="inline-flex items-center gap-1 rounded bg-teal/10 px-2.5 py-1 text-xs font-black leading-none text-teal ring-1 ring-teal/20"
+              >
+                <Icon name="lucide:mouse-pointer-click" class="h-3.5 w-3.5" />
+                線上報名
+              </span>
+            </h2>
             <p class="mt-3 text-sm leading-7 text-ink/68">{{ item.summary }}</p>
             <div class="mt-5 flex items-center justify-between gap-3 border-t border-rosewood/10 pt-4">
               <span class="inline-flex items-center gap-2 text-sm font-bold text-ink/62">
