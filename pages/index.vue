@@ -4,6 +4,7 @@ const highlights = useState('home-highlights', () => $millionasia.getRandomHighl
 const spotlightPhotos = computed(() => highlights.value.slice(0, 4))
 const homeNews = computed(() => $millionasia.news.slice(0, 10))
 const homeEvents = computed(() => $millionasia.events.slice(0, 10))
+const eventRegistrationStatus = (event) => $millionasia.getEventRegistrationStatus(event)
 </script>
 
 <template>
@@ -91,7 +92,16 @@ const homeEvents = computed(() => $millionasia.events.slice(0, 10))
               >
                 <img :src="item.image" :alt="item.title" class="h-20 w-full rounded object-cover ring-1 ring-rosewood/10">
                 <span>
-                  <time class="text-sm font-bold text-brass">{{ item.date }}</time>
+                  <span class="flex flex-wrap items-center gap-2">
+                    <time class="text-sm font-bold text-brass">{{ item.date }}</time>
+                    <span
+                      v-if="eventRegistrationStatus(item).acceptsRegistration"
+                      class="inline-flex items-center gap-1 rounded bg-teal px-2 py-1 text-xs font-black leading-none text-white"
+                    >
+                      <Icon name="lucide:mouse-pointer-click" class="h-3 w-3" />
+                      立刻報名
+                    </span>
+                  </span>
                   <span class="mt-1 block font-bold leading-relaxed text-ink group-hover:text-teal">{{ item.title }}</span>
                   <span class="mt-1 line-clamp-1 block text-xs text-ink/58">{{ item.summary }}</span>
                 </span>
