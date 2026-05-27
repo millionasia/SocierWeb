@@ -50,6 +50,8 @@ const eventSeeds = [
   ['2027-05-06', '年度城市共創論壇', '邀請產官學研代表共同討論城市創新與產業合作議題。']
 ]
 
+const eventCapacities = [80, 120, 48, 60, 36, 40, 72, 54, 160, 130, 42, 32, 70, 140, 24, 38, 180]
+
 const directorAvatars = [
   'https://randomuser.me/api/portraits/men/32.jpg',
   'https://randomuser.me/api/portraits/men/52.jpg',
@@ -133,27 +135,37 @@ class MillionasiaCore {
       related: ['會員服務', '產業交流', '會務公告'][index % 3]
     }))
 
-    this.events = eventSeeds.map(([date, title, summary], index) => ({
-      id: index + 1,
-      date,
-      title,
-      summary,
-      image: groupActivityImages[(index + 3) % groupActivityImages.length],
-      time: index % 2 === 0 ? '14:00 - 16:30' : '09:30 - 12:00',
-      location: ['臺北市產業交流中心', '三創協會會議室', '會員企業示範場域'][index % 3],
-      audience: ['協會會員', '產業夥伴', '對主題有興趣之來賓'],
-      agenda: [
-        '來賓報到與交流',
-        '主題分享與案例說明',
-        '會員提問與綜合討論',
-        '會後交流與後續媒合'
-      ],
-      content: [
-        `${summary} 活動規劃以實務交流為主，協助參與者在有限時間內掌握主題背景、案例經驗與可能的合作方向。`,
-        '活動當日將安排主題說明、案例分享與交流討論，並視現場狀況保留彈性時間，讓會員能針對自身需求提出問題或分享經驗。',
-        '本頁為快速原型示意內容，後續可加入線上報名、名額限制、講者介紹、活動附件與報到通知等功能。'
-      ]
-    }))
+    this.events = eventSeeds.map(([date, title, summary], index) => {
+      const capacity = eventCapacities[index % eventCapacities.length]
+      const registered = Math.min(capacity - 2, 18 + ((index * 9) % Math.max(capacity - 18, 1)))
+      const deadline = this.getRegistrationDeadline(date)
+
+      return {
+        id: index + 1,
+        date,
+        title,
+        summary,
+        image: groupActivityImages[(index + 3) % groupActivityImages.length],
+        time: index % 2 === 0 ? '14:00 - 16:30' : '09:30 - 12:00',
+        location: ['臺北市產業交流中心', '三創協會會議室', '會員企業示範場域'][index % 3],
+        audience: ['協會會員', '產業夥伴', '對主題有興趣之來賓'],
+        capacity,
+        registered,
+        registrationDeadline: deadline,
+        registrationNote: '完成線上報名後，協會將於活動前寄送提醒通知與報到資訊。',
+        agenda: [
+          '來賓報到與交流',
+          '主題分享與案例說明',
+          '會員提問與綜合討論',
+          '會後交流與後續媒合'
+        ],
+        content: [
+          `${summary} 活動規劃以實務交流為主，協助參與者在有限時間內掌握主題背景、案例經驗與可能的合作方向。`,
+          '活動當日將安排主題說明、案例分享與交流討論，並視現場狀況保留彈性時間，讓會員能針對自身需求提出問題或分享經驗。',
+          '本頁為快速原型示意內容，已加入線上報名流程，可作為後續串接會員資料、名額控管與報到通知的基礎。'
+        ]
+      }
+    })
 
     this.heroImage = {
       url: 'https://images.pexels.com/photos/8761324/pexels-photo-8761324.jpeg?auto=compress&cs=tinysrgb&w=1920&h=980&fit=crop',
@@ -179,6 +191,26 @@ class MillionasiaCore {
 
   getFooterNotice() {
     return `${this.associationName} 版權所有`
+  }
+
+  getRegistrationDeadline(date) {
+    const deadline = new Date(`${date}T00:00:00`)
+    deadline.setDate(deadline.getDate() - 3)
+
+    const year = deadline.getFullYear()
+    const month = String(deadline.getMonth() + 1).padStart(2, '0')
+    const day = String(deadline.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  getEventRegistrationStatus(event) {
+    const remaining = Math.max(event.capacity - event.registered, 0)
+
+    return {
+      remaining,
+      label: remaining > 0 ? '開放報名' : '名額已滿',
+      isFull: remaining === 0
+    }
   }
 
   findNews(id) {

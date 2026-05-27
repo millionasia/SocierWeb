@@ -12,6 +12,8 @@ const pagedEvents = computed(() => {
   const start = (currentPage.value - 1) * perPage
   return $millionasia.events.slice(start, start + perPage)
 })
+
+const registrationStatus = (event) => $millionasia.getEventRegistrationStatus(event)
 </script>
 
 <template>
@@ -42,6 +44,12 @@ const pagedEvents = computed(() => {
             <time class="absolute left-4 top-4 rounded bg-rosewood px-3 py-2 text-sm font-bold text-white shadow">
               {{ item.date }}
             </time>
+            <span
+              class="absolute bottom-4 right-4 rounded px-3 py-2 text-xs font-black shadow"
+              :class="registrationStatus(item).isFull ? 'bg-ink text-white' : 'bg-brass text-white'"
+            >
+              {{ registrationStatus(item).label }}
+            </span>
           </div>
           <div class="p-5">
             <div class="mb-4 flex items-center justify-between gap-4">
@@ -50,6 +58,16 @@ const pagedEvents = computed(() => {
             </div>
             <h2 class="text-xl font-bold leading-relaxed group-hover:text-teal">{{ item.title }}</h2>
             <p class="mt-3 text-sm leading-7 text-ink/68">{{ item.summary }}</p>
+            <div class="mt-5 flex items-center justify-between gap-3 border-t border-rosewood/10 pt-4">
+              <span class="inline-flex items-center gap-2 text-sm font-bold text-ink/62">
+                <Icon name="lucide:users" class="h-4 w-4 text-teal" />
+                剩餘 {{ registrationStatus(item).remaining }} / {{ item.capacity }} 名
+              </span>
+              <span class="inline-flex items-center gap-1 text-sm font-black text-rosewood">
+                查看報名
+                <Icon name="lucide:chevron-right" class="h-4 w-4" />
+              </span>
+            </div>
           </div>
         </NuxtLink>
       </div>
